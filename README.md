@@ -1,6 +1,6 @@
 # reckziegel.me
 
-Personal site for Kurt Reckziegel. Static site built with [Astro 5](https://astro.build), deployed to Hostinger shared hosting.
+Personal site for Kurt Reckziegel. Static site built with [Astro 5](https://astro.build), deployed to Hostinger shared hosting. Auto-deploys via GitHub Actions on every push to `main`.
 
 Lighthouse scores 100/100/100/100 across accessibility, best practices, SEO, and performance.
 
@@ -11,12 +11,12 @@ Lighthouse scores 100/100/100/100 across accessibility, best practices, SEO, and
 ```bash
 npm install
 npm run dev        # local dev server at http://localhost:4321
-npm run build      # produces ./dist/ ready to upload
-npm run preview    # serve ./dist/ locally to sanity-check the build
+npm run build      # generate ./dist/ locally (GitHub Actions does this on push)
+npm run preview    # serve ./dist/ locally to sanity-check the production build
 npm run og         # regenerate /public/og-image.png from scripts/build-og.mjs
 ```
 
-Requires Node 20+ (project tested on Node 24).
+Deploying is `git push` — see [Deploying](#deploying). Requires Node 20+ (project tested on Node 24).
 
 ---
 
@@ -41,6 +41,8 @@ Requires Node 20+ (project tested on Node 24).
 | OG share image             | `public/og-image.png` (regen with `npm run og`)  |
 | Resume PDF                 | `public/Kurt Reckziegel Resume.pdf`              |
 | `robots.txt`               | `public/robots.txt`                              |
+| Apache config (404, cache) | `public/.htaccess`                               |
+| Deploy workflow            | `.github/workflows/deploy.yml`                   |
 
 ---
 
@@ -93,75 +95,91 @@ Edit `src/data/publications.ts`. Each entry has a `title`, `outlet`, `year`, and
 
 ---
 
-## Deploying to Hostinger
+## Deploying
 
-### One-time setup
+This site auto-deploys via GitHub Actions. Push to `main`, the workflow at `.github/workflows/deploy.yml` runs, builds the site, and uploads `./dist/` over FTPS to Hostinger. End-to-end takes ~60 seconds.
 
-1. **Domain**: Confirm `reckziegel.me` is registered and either pointing to Hostinger's nameservers (`ns1.dns-parking.com` etc.) or has an A record pointing at your Hostinger account's IP. Hostinger will tell you which to use under **Domains → DNS**.
-2. **SSL**: Hostinger auto-provisions a free Let's Encrypt cert for any domain pointed at the account. Confirm under **SSL** in hPanel that the cert is active and "Force HTTPS" is enabled.
-3. **File access**: Decide between Hostinger's File Manager (browser-based, fine for occasional updates) or FTP (faster for bulk uploads — credentials under **Files → FTP Accounts** in hPanel).
+### Day-to-day workflow
 
-### Every deploy
+```bash
+# 1. Edit something (case study, bio, CSS, whatever)
+# 2. (Optional) Preview locally
+npm run dev          # http://localhost:4321
+
+# 3. Commit and push — that's the deploy
+git add .
+git commit -m "Short description of the change"
+git push
+```
+
+Watch the run at `gh run watch` in the terminal, or in the browser at the **Actions** tab of the GitHub repo. When it goes green, hard-refresh `https://reckziegel.me/` (Cmd+Shift+R) to see the change live.
+
+### How the auto-deploy works
+
+The workflow file lives at `.github/workflows/deploy.yml`. It triggers on:
+
+- Any push to the `main` branch
+- Manual runs from the **Actions** tab on GitHub (the "Run workflow" button)
+
+Steps each run:
+
+1. Check out the latest code from the repo
+2. Set up Node 24
+3. Run `npm ci` (deterministic install from `package-lock.json`)
+4. Run `npm run build` to generate `./dist/`
+5. Sync `./dist/` to Hostinger via FTPS using [SamKirkland/FTP-Deploy-Action](https://github.com/SamKirkland/FTP-Deploy-Action). Only changed files get uploaded — the action tracks state via `.ftp-deploy-sync-state.json` on the server.
+
+### Required GitHub Secrets
+
+Three encrypted secrets configured under **Settings → Secrets and variables → Actions** on the GitHub repo:
+
+| Secret name    | Value                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| `FTP_SERVER`   | FTP hostname or IP from hPanel → **Files → FTP Accounts**. **Bare hostname only** — no `ftp://` prefix, no trailing slash. |
+| `FTP_USERNAME` | FTP username (looks like `u123456789` or `u123456789.reckziegel.me`)                           |
+| `FTP_PASSWORD` | FTP password                                                                                   |
+
+### Server-dir gotcha
+
+The workflow's `server-dir` is set to `/domains/reckziegel.me/public_html/` — that's the actual document root for this site on Hostinger's premium hosting layout.
+
+**Do NOT change this to `/public_html/`** (the obvious-looking default). That folder exists at the FTP account's home directory level, but it's **NOT** the live document root for the domain. Files uploaded there go nowhere visible to the public. This trap cost a couple of hours during initial setup.
+
+If you ever set up auto-deploy for a different domain on the same hosting account, the pattern is: `/domains/<that-domain>/public_html/`.
+
+### One-time setup already done
+
+- **Domain + DNS + SSL**: `reckziegel.me` points at Hostinger nameservers; Let's Encrypt cert is auto-provisioned. No action needed unless you change registrars.
+- **`.htaccess`**: Lives at `public/.htaccess` in the repo, which Astro copies to `dist/.htaccess` at build time. Two responsibilities: it serves the custom 404 (`ErrorDocument 404 /404.html`) and sets cache headers (HTML 5 min, images/PDF 30 days, fingerprinted CSS/JS/fonts 1 year). Don't touch unless you know why.
+
+### After a deploy, verify
+
+For trivial content edits, hard-refresh and eyeball the live site. For anything bigger:
+
+1. Hit `https://reckziegel.me/` in a **private window** to bypass cache
+2. Click into a case study, confirm it loads at `/work/<slug>/`
+3. Hit a deliberately bad URL like `/nope/` and confirm the custom 404 still serves
+4. (For major changes) re-run the Lighthouse audit — see section below
+
+### Manual fallback (emergency only)
+
+If auto-deploy is broken and you need to push a fix urgently:
 
 ```bash
 npm run build
 ```
 
-This produces a fully self-contained static site in `./dist/`. The structure looks like:
+Then upload contents of `dist/` manually to `/domains/reckziegel.me/public_html/` via Hostinger File Manager.
 
-```
-dist/
-├── index.html                    ← home page
-├── 404.html                      ← custom 404
-├── favicon.svg
-├── headshot.jpg
-├── og-image.png
-├── robots.txt
-├── sitemap-index.xml
-├── sitemap-0.xml
-├── Kurt Reckziegel Resume.pdf
-├── _astro/                       ← font + CSS bundles
-└── work/
-    ├── peloton-repositioning/
-    │   └── index.html
-    ├── textnow-ai-brief/
-    │   └── index.html
-    └── …
-```
-
-Upload the **contents** of `dist/` (not the folder itself) into Hostinger's `public_html/`. After upload the structure inside `public_html/` should be identical to what's inside `dist/` locally.
-
-#### Via Hostinger File Manager
-
-1. hPanel → **Files → File Manager**
-2. Open `public_html/`
-3. Delete any default Hostinger placeholder files (typically `default.php` or `index.html` from their setup wizard)
-4. Drag the contents of your local `dist/` into the browser window. The File Manager handles nested folder uploads correctly.
-
-#### Via FTP
-
-```bash
-# example using lftp; substitute your FTP creds from hPanel
-lftp -e "mirror -R --delete dist/ public_html/; quit" \
-  -u "$HOSTINGER_FTP_USER","$HOSTINGER_FTP_PASS" \
-  ftp.reckziegel.me
-```
-
-`mirror -R --delete` does a full sync — anything in `public_html/` that doesn't exist in local `dist/` gets removed. Safe for this site since `dist/` is the complete output.
-
-### After deploy
-
-1. Hit `https://reckziegel.me/` in a private browser window to bypass any local cache
-2. Click a case study, confirm it loads at `https://reckziegel.me/work/<slug>/`
-3. Hit a deliberately bad URL like `/nope/` and confirm the custom 404 shows
-4. Run a fresh Lighthouse audit against production (the dev preview already scores 100s, but verify with the deployed copy)
+**Important**: in hPanel File Manager, the **"Access files of reckziegel.me"** shortcut routes you directly into the correct doc root. The **"Access all files"** option lands you at the account home, where there's a leftover `/public_html/` that's a dead-end trap. Use the domain-specific shortcut.
 
 ### Common gotchas
 
-- **Pretty URLs**: Astro generates `/work/foo/index.html`, so `/work/foo/` works natively with no `.htaccess` config needed.
-- **Don't upload `node_modules/`, `src/`, or `dist/` itself as a folder**: only the contents of `dist/`.
-- **Don't commit secrets**: There are no secrets in this project. If you ever add an API key, put it in `.env` and never commit that file.
-- **Favicon cache**: Browsers cache favicons aggressively. After updating, hard-refresh (Cmd+Shift+R) to see the new one.
+- **The leftover `/public_html/`** at the home directory level is from initial Hostinger setup and isn't served. Don't upload there. If you see old files there, ignore them.
+- **Cache headers** mean your browser might serve cached HTML for up to 5 minutes after a deploy. Hard-refresh (Cmd+Shift+R) to see fresh content immediately.
+- **Don't commit secrets**: No secrets in this codebase currently. If you ever add one (API key, etc.), put it in `.env` (already in `.gitignore`) and reference via environment variables.
+- **Lockfile discipline**: If you `npm install` a new dependency locally, commit both `package.json` AND `package-lock.json`. The Actions runner uses `npm ci` which fails if the lockfile is out of sync.
+- **Pretty URLs**: Astro generates `/work/foo/index.html`, which serves cleanly at `/work/foo/` with no extra `.htaccess` config required.
 
 ---
 
