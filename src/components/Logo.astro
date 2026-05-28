@@ -1,0 +1,60 @@
+---
+import { logos } from '../data/logos';
+
+interface Props {
+  /** Slug matching a filename in src/assets/logos/ (without the .svg). */
+  name: string;
+  /** Override the manifest's display label. Useful when the surrounding
+      prose needs a different word (e.g. "ZX Ventures" rendered with the
+      AB InBev icon and URL) or when a possessive should sit before the
+      icon ("Peloton's [icon]" rather than "Peloton [icon]'s"). */
+  label?: string;
+}
+
+const { name, label } = Astro.props;
+const logo = logos[name];
+
+if (!logo) {
+  const available = Object.keys(logos).sort().join(', ');
+  throw new Error(
+    `<Logo name="${name}" /> not found. Available: ${available}. ` +
+      `To add: drop src/assets/logos/${name}.svg.`,
+  );
+}
+
+const Tag = logo.url ? 'a' : 'span';
+const linkAttrs = logo.url
+  ? { href: logo.url, target: '_blank', rel: 'noopener noreferrer' }
+  : {};
+
+// Deterministic per-slug tilt, set as a CSS custom property so the
+// hover/Konami transforms can compose with it.
+const markStyle = `--logo-rotation: ${logo.rotation}deg; --logo-scale: ${logo.scale}`;
+---
+{
+  logo.replacesText ? (
+    <Tag
+      class="logo-pair logo-pair--solo"
+      role="img"
+      aria-label={label ?? logo.label}
+      {...linkAttrs}
+    >
+      <span
+        class="logo-mark"
+        style={markStyle}
+        data-full-bleed={logo.fullBleed ? '' : undefined}
+        set:html={logo.svg}
+      />
+    </Tag>
+  ) : (
+    <Tag class="logo-pair" {...linkAttrs}>
+      <span class="logo-label">{label ?? logo.label}</span><span
+        class="logo-mark"
+        style={markStyle}
+        aria-hidden="true"
+        data-full-bleed={logo.fullBleed ? '' : undefined}
+        set:html={logo.svg}
+      />
+    </Tag>
+  )
+}

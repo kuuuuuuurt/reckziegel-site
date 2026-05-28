@@ -1,0 +1,84 @@
+---
+import Base from './Base.astro';
+
+interface NavLink {
+  slug: string;
+  title: string;
+}
+
+interface Props {
+  title: string;
+  client: string;
+  timeframe: string;
+  summary?: string;
+  prev: NavLink | null;
+  next: NavLink | null;
+}
+
+const { title, client, timeframe, summary, prev, next } = Astro.props;
+---
+<Base title={`${title} — Kurt Reckziegel`} description={summary}>
+  <main class="work-detail">
+    <a class="site-wordmark" href="/" aria-label="Back to Kurt Reckziegel — home">
+      <span class="site-wordmark-back" aria-hidden="true">
+        <span class="site-wordmark-arrow">←</span>
+        <span>Back to</span>
+      </span>
+      <img
+        class="site-wordmark-photo"
+        src="/headshot.jpg"
+        alt=""
+        width="32"
+        height="32"
+        loading="eager"
+        decoding="async"
+      />
+      <span class="site-wordmark-name">Kurt Reckziegel</span>
+    </a>
+
+    <article>
+      <header class="work-header">
+        <p class="work-meta">
+          <span class="work-client">{client}</span>
+          <span class="meta-sep" aria-hidden="true">·</span>
+          <span class="work-timeframe">{timeframe}</span>
+        </p>
+        <h1>{title}</h1>
+        {summary && <p class="work-summary">{summary}</p>}
+      </header>
+
+      <div class="work-body">
+        <slot />
+      </div>
+    </article>
+
+    {
+      (prev || next) && (
+        <nav class="prev-next" aria-label="Other case studies">
+          {prev ? (
+            <a class="prev" href={`/work/${prev.slug}/`}>
+              <span class="prev-next-direction">
+                <span class="dir-arrow" aria-hidden="true">←</span>
+                <span>Previous</span>
+              </span>
+              <span class="prev-next-title">{prev.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <a class="next" href={`/work/${next.slug}/`}>
+              <span class="prev-next-direction">
+                <span>Next</span>
+                <span class="dir-arrow" aria-hidden="true">→</span>
+              </span>
+              <span class="prev-next-title">{next.title}</span>
+            </a>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )
+    }
+  </main>
+</Base>

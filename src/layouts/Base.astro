@@ -1,0 +1,198 @@
+---
+import '@fontsource/caveat/700.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'Kurt Reckziegel — independent strategy, research, and brand consultant. Runs Kudare.',
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://reckziegel.me').toString();
+const ogImageUrl = new URL('/og-image.png', Astro.site ?? 'https://reckziegel.me').toString();
+
+// Site-wide Person schema. Tells search engines who this site is about
+// and links the brand surface together — LinkedIn, the company (Kudare),
+// the alma mater. Helps personal-name search results show a knowledge
+// panel and links the various profiles as the same entity.
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Kurt Reckziegel',
+  url: 'https://reckziegel.me',
+  image: 'https://reckziegel.me/headshot.jpg',
+  jobTitle: 'Independent Strategy, Research & Brand Consultant',
+  description:
+    'Kurt Reckziegel is an independent strategy, research, and brand consultant. He runs Kudare.',
+  email: 'kurt.reckziegel@gmail.com',
+  nationality: 'Canadian',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Kudare',
+    url: 'https://www.linkedin.com/company/kudare/about/',
+  },
+  alumniOf: {
+    '@type': 'CollegeOrUniversity',
+    name: 'John Molson School of Business, Concordia University',
+    url: 'https://www.concordia.ca/jmsb.html',
+  },
+  sameAs: ['https://www.linkedin.com/in/kurtreckziegel/'],
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kurt Reckziegel — Curious about people. Obsessed with brands. Grounded in strategy." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+  </head>
+  <body>
+    <slot />
+
+    <!-- Scribble divider in the accent color. Draws itself in after the
+         page-load motion settles. -->
+    <svg
+      class="footer-scribble"
+      viewBox="0 0 300 10"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M 2 5 C 25 1, 50 9, 75 4 S 125 8, 150 5 S 200 1, 225 7 S 275 3, 298 5"
+        pathLength="100"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      />
+    </svg>
+
+    <footer class="site-footer">
+      <p class="footer-copyright">© Kurt Reckziegel · 2026</p>
+
+      <nav class="footer-links" aria-label="Profile">
+        <a
+          href="https://www.linkedin.com/in/kurtreckziegel/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-link"
+        >
+          <span class="footer-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+              <rect x="2" y="9" width="4" height="12"/>
+              <circle cx="4" cy="4" r="2"/>
+            </svg>
+          </span>
+          <span class="footer-link-label">Connect on LinkedIn</span>
+        </a>
+        <a
+          href="/Kurt%20Reckziegel%20Resume.pdf"
+          download="Kurt Reckziegel Resume.pdf"
+          class="footer-link"
+        >
+          <span class="footer-link-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <path d="M12 12v6"/>
+              <path d="m9 15 3 3 3-3"/>
+            </svg>
+          </span>
+          <span class="footer-link-label">Download Resume</span>
+        </a>
+      </nav>
+
+      <p class="footer-built">
+        <span class="scrawl scrawl-go-me">I personally built this from scratch</span><br />
+        with my buddy <a href="https://claude.com/claude-code" target="_blank" rel="noopener noreferrer">Claude Code</a>
+        on <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a>.
+      </p>
+    </footer>
+
+    <!-- Screen-reader-only live region for transient announcements
+         (e.g. "Email copied"). Stays empty until JS writes to it. -->
+    <div class="sr-live" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+      // Friendly note for anyone who opens DevTools. Costs nothing
+      // visually; only the curious ever see it.
+      console.log(
+        '%cHi there.',
+        'font: bold italic 22px "Caveat", cursive; color: #e91d63; padding: 6px 0 2px;',
+      );
+      console.log(
+        '%cBuilt with my buddy Claude Code on Astro.\nKonami code if you haven\'t found it yet: ↑ ↑ ↓ ↓ ← → ← → B A',
+        'color: #181614; font: 13px -apple-system, "Segoe UI", sans-serif; line-height: 1.7;',
+      );
+      console.log(
+        '%c— Kurt',
+        'font: italic 16px "Caveat", cursive; color: #e91d63; padding-bottom: 6px;',
+      );
+
+      // Konami code easter egg: ↑↑↓↓←→←→BA toggles a body class that
+      // makes every inline logo wiggle. Type it again to stop.
+      const sequence = [
+        'ArrowUp', 'ArrowUp',
+        'ArrowDown', 'ArrowDown',
+        'ArrowLeft', 'ArrowRight',
+        'ArrowLeft', 'ArrowRight',
+        'b', 'a',
+      ];
+      let buffer: string[] = [];
+
+      document.addEventListener('keydown', (e) => {
+        buffer.push(e.key);
+        if (buffer.length > sequence.length) buffer.shift();
+        const matched =
+          buffer.length === sequence.length &&
+          buffer.every((k, i) => k.toLowerCase() === sequence[i].toLowerCase());
+        if (matched) {
+          document.body.classList.toggle('konami');
+          buffer = [];
+        }
+      });
+
+      // Click-to-copy for anything with [data-copy]. Shows a visual flash
+      // and announces to screen readers via the .sr-live region.
+      const liveRegion = document.querySelector<HTMLElement>('.sr-live');
+      document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const text = btn.dataset.copy;
+          if (!text) return;
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.classList.add('copied');
+            if (liveRegion) liveRegion.textContent = 'Copied to clipboard';
+            window.setTimeout(() => {
+              btn.classList.remove('copied');
+              if (liveRegion) liveRegion.textContent = '';
+            }, 1600);
+          } catch {
+            // Clipboard API can fail in non-secure contexts or if permission
+            // is denied. Fall through silently — the email is still visible.
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

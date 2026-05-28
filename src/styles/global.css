@@ -1,0 +1,1421 @@
+/* ============================================================
+   reckziegel.me — design system
+   Chunk 4: typography, color, layout, responsive, dark mode.
+   ============================================================ */
+
+/* ---- Tokens ---- */
+:root {
+  color-scheme: light;
+
+  /* Fonts. Apple devices get "New York" (a beautiful system serif).
+     Others fall back through Iowan, Charter, Georgia. */
+  --font-display:
+    'New York', 'Iowan Old Style', 'Apple Garamond', Charter, Georgia, ui-serif,
+    serif;
+  --font-body:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Inter,
+    system-ui, sans-serif;
+
+  /* Mobile type scale */
+  --text-xs: 0.8125rem;   /* 13px */
+  --text-sm: 0.9375rem;   /* 15px */
+  --text-base: 1.0625rem; /* 17px */
+  --text-lg: 1.1875rem;   /* 19px */
+  --text-xl: 1.375rem;    /* 22px */
+  --text-2xl: 1.75rem;    /* 28px — work detail h1 */
+  --text-3xl: 2.25rem;    /* 36px */
+  --text-4xl: 2.75rem;    /* 44px — home page name */
+
+  /* Color */
+  --bg: #fdfcf8;
+  --text: #181614;
+  --muted: #6b6a66;
+  --divider: color-mix(in srgb, var(--text) 13%, transparent);
+  --surface-soft: color-mix(in srgb, var(--text) 6%, transparent);
+  /* Site accent — one pink, used everywhere. Text/icons that sit on top
+     of an accent-colored background use plain white for contrast. */
+  --accent: #e91d63;
+
+  /* Layout */
+  --measure: 42rem;       /* ~672px — single column / detail pages */
+  --measure-wide: 72rem;  /* ~1152px — home two-column on desktop */
+  --gutter: 1.25rem;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --text-base: 1.125rem; /* 18px */
+    --text-lg: 1.25rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 2rem;      /* work detail h1 */
+    --text-3xl: 3rem;
+    --text-4xl: 4rem;      /* 64px — home page name */
+    --gutter: 1.5rem;
+  }
+}
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Highlighting any text on the page wraps it in our accent color.
+   White text on the pink reads as "selected" rather than "marked." */
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Faint paper-grain texture on the body background — felt, not seen.
+   ~6% opacity fractal noise tiled seamlessly. Keeps the off-white
+   from feeling like a flat screen. */
+body {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-repeat: repeat;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+/* ---- Layout shell ---- */
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 3.5rem var(--gutter) 6rem;
+}
+
+@media (min-width: 768px) {
+  main {
+    padding-top: 5.5rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* Home layout: each column pinned to its side of the page (bio left,
+   right column right). No centered container — the columns hug the
+   viewport edges with a generous gutter. The flex gap absorbs whatever
+   space is left between them, so wider screens get more breathing room.
+   Below the breakpoint they stack. */
+main.home {
+  max-width: none;
+  padding-left: clamp(1.25rem, 4vw, 4rem);
+  padding-right: clamp(1.25rem, 4vw, 4rem);
+}
+
+.main-col {
+  max-width: 38rem;
+  margin-bottom: 3.5rem;
+}
+
+.home .right-col {
+  max-width: 48rem;
+}
+
+@media (min-width: 960px) {
+  main.home {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+
+  .main-col {
+    flex: 0 1 38rem;
+    margin-bottom: 0;
+  }
+
+  /* The right column grows into whatever room is left after the bio
+     column, capped so it doesn't run wider than is readable. This is
+     what lets each Selected Work title fit on one line on wide screens. */
+  .home .right-col {
+    flex: 1 1 32rem;
+  }
+}
+
+/* ============================================================
+   Easter egg: a little sunglasses dude pops up between the two
+   columns ONLY on unusually wide monitors (~2000px+). Persistent
+   gentle bob so it feels alive without being distracting.
+   ============================================================ */
+.big-screen-egg {
+  display: none;
+}
+
+@media (min-width: 2000px) {
+  .big-screen-egg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    margin-top: 8rem;
+    /* Muted instead of accent pink, partly transparent at rest —
+       reads as a background detail, not a feature. */
+    color: var(--muted);
+    opacity: 0.55;
+    text-align: center;
+    pointer-events: none;
+    animation: big-screen-bob 7s ease-in-out infinite;
+    transform-origin: center center;
+    transition: opacity 600ms var(--ease);
+  }
+
+  /* If someone's mouse is hovering anywhere in the home grid, brighten
+     it a touch — rewards the curious without being loud at rest. */
+  main.home:hover .big-screen-egg {
+    opacity: 0.85;
+  }
+
+  .big-screen-egg-face {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1rem;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .big-screen-egg-text {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.05;
+  }
+}
+
+@keyframes big-screen-bob {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50%      { transform: rotate(-1deg) translateY(-3px); }
+}
+
+/* ---- Links ---- */
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--divider);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 200ms var(--ease);
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ---- Headings ---- */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* ---- Code (used in chunk 1/2 smoke text only — kept just in case) ---- */
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--surface-soft);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   Logo (inline word + mark, optionally linked)
+
+   Each .logo-mark has a deterministic per-slug rotation set via the
+   --logo-rotation custom property (see src/data/logos.ts). Hover
+   amplifies it — they feel like stickers stuck slightly askew. The
+   Konami code (↑↑↓↓←→←→BA) makes them all dance.
+   ============================================================ */
+.logo-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+}
+
+a.logo-pair {
+  cursor: pointer;
+}
+
+a.logo-pair:hover .logo-label {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+.logo-mark {
+  --logo-rotation: 0deg;
+  --logo-scale: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 1em;
+  position: relative;
+  top: 0.13em;
+  color: currentColor;
+  flex-shrink: 0;
+  transform: rotate(var(--logo-rotation)) scale(var(--logo-scale));
+  transform-origin: center center;
+  transition:
+    transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Bigger pop on hover — exaggerate the sticker tilt and lift it up. */
+a.logo-pair:hover .logo-mark,
+a.logo-pair:focus-visible .logo-mark {
+  transform:
+    rotate(calc(var(--logo-rotation) * -2))
+    translateY(-2px)
+    scale(calc(var(--logo-scale) * 1.2));
+}
+
+/* Solo (wordmark-only) logos like VICE: reset baseline nudge. */
+.logo-pair--solo .logo-mark {
+  top: 0;
+}
+
+/* ---- Konami dance party ----
+   Activated by ↑↑↓↓←→←→BA. Each logo wiggles around its base tilt
+   on its own little phase so the row looks alive. */
+@keyframes konami-wiggle {
+  0%, 100% {
+    transform: rotate(var(--logo-rotation)) scale(var(--logo-scale)) translateY(0);
+  }
+  25% {
+    transform: rotate(calc(var(--logo-rotation) + 14deg)) scale(var(--logo-scale)) translateY(-4px);
+  }
+  50% {
+    transform: rotate(calc(var(--logo-rotation) - 14deg)) scale(var(--logo-scale)) translateY(0);
+  }
+  75% {
+    transform: rotate(calc(var(--logo-rotation) + 10deg)) scale(var(--logo-scale)) translateY(-3px);
+  }
+}
+
+body.konami .logo-mark {
+  animation: konami-wiggle 600ms ease-in-out infinite;
+}
+
+/* Subtle phase offset per logo so they don't all wiggle in lock-step. */
+body.konami .logo-pair:nth-child(2n) .logo-mark { animation-delay: 80ms; }
+body.konami .logo-pair:nth-child(3n) .logo-mark { animation-delay: 160ms; }
+body.konami .logo-pair:nth-child(4n) .logo-mark { animation-delay: 240ms; }
+body.konami .logo-pair:nth-child(5n) .logo-mark { animation-delay: 320ms; }
+
+.logo-mark svg {
+  height: 100%;
+  width: auto;
+  display: block;
+  /* Default fill for SVG shapes that have no explicit fill attribute.
+     Shapes with their own fill (e.g. brand colors) override this. */
+  fill: currentColor;
+}
+
+/* Full-bleed brand marks (a colored background extending to the viewBox
+   edges) get rounded corners so the chip reads as a unit. */
+.logo-mark[data-full-bleed] {
+  border-radius: 0.18em;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Home page
+   ============================================================ */
+
+/* ---- Intro ---- */
+.intro {
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .intro {
+    margin-bottom: 3rem;
+  }
+}
+
+.intro-identity {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .intro-identity {
+    gap: 1.4rem;
+    margin-bottom: 2.5rem;
+  }
+}
+
+.headshot {
+  display: block;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--divider);
+  background: var(--surface-soft);
+  flex-shrink: 0;
+  transition: border-color 200ms var(--ease);
+  cursor: grab;
+}
+
+/* Quick wave-hello on hover (runs once, then settles). */
+@keyframes headshot-wave {
+  0%   { transform: rotate(0deg); }
+  20%  { transform: rotate(-10deg); }
+  40%  { transform: rotate(8deg); }
+  60%  { transform: rotate(-6deg); }
+  80%  { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.headshot:hover {
+  animation: headshot-wave 650ms ease-in-out;
+  border-color: var(--accent);
+}
+
+/* Single click: a full 360° spin. The .spinning class beats the hover
+   rule because it appears later in the cascade with equal specificity. */
+@keyframes headshot-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.headshot.spinning {
+  animation: headshot-spin 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .headshot {
+    width: 108px;
+    height: 108px;
+  }
+}
+
+/* ---- Pronunciation speaker button ---- */
+.pronounced {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.pronounce-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.15em 0.3em;
+  border-radius: 4px;
+  line-height: 0;
+  transition:
+    background 200ms var(--ease),
+    color 200ms var(--ease),
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pronounce-btn svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.pronounce-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.15);
+}
+
+.pronounce-btn:active {
+  transform: scale(0.95);
+}
+
+.intro-name {
+  min-width: 0;
+}
+
+.intro h1 {
+  font-size: var(--text-3xl);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem;
+}
+
+.pronounced {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin: 0;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.tagline-line {
+  display: block;
+}
+
+.tagline-line + .tagline-line {
+  margin-top: 0.15em;
+}
+
+/* Hand-drawn scribbles (question mark, double circle, double underline).
+   Each is an inline <svg> child of its word/line, positioned absolutely
+   over the content. The paths use pathLength="100" so the draw-in
+   animation works uniformly regardless of geometric length. */
+
+.scribble {
+  position: absolute;
+  pointer-events: none;
+  color: var(--accent);
+  overflow: visible;
+}
+
+/* ---- Question mark next to "Curious" ---- */
+.scribbled-question {
+  position: relative;
+  display: inline-block;
+}
+
+.scribble-q {
+  top: -0.55em;
+  right: -0.15em;
+  width: 0.75em;
+  height: 0.9em;
+  transform: rotate(22deg);
+}
+
+/* ---- Double circle around "brands" ---- */
+.circled {
+  position: relative;
+  display: inline-block;
+  z-index: 0;
+  padding: 0 0.2em;
+}
+
+.scribble-circle {
+  /* Tight box: barely above & below the word, just past the right edge,
+     barely past the left edge — keeps the circle from clipping the lines
+     above ("people") or the word beside it ("with"). */
+  inset: -0.05em -0.45em -0.1em -0.1em;
+  width: auto;
+  height: auto;
+  z-index: -1;
+  transform: rotate(-1.5deg);
+}
+
+/* ---- Double wavy underline beneath "Grounded in strategy." ---- */
+.tagline-line--underlined {
+  /* Shrink the block to its text width so the underline ends with "strategy." */
+  width: fit-content;
+  position: relative;
+  padding-bottom: 0.5em;
+}
+
+.scribble-underline {
+  left: 0;
+  right: 0;
+  bottom: -0.05em;
+  width: auto;
+  height: 0.55em;
+}
+
+
+/* ---- Bio ---- */
+.bio {
+  margin-bottom: 2.5rem;
+}
+
+.bio p {
+  margin: 0 0 1.15rem;
+}
+
+.bio p:last-child {
+  margin-bottom: 0;
+}
+
+/* Hand-drawn pink slash, used inline where a "/" would normally go.
+   The path has a slight wobble so it reads as marker, not glyph. */
+.scribble-slash {
+  display: inline-block;
+  width: 0.7em;
+  height: 1.3em;
+  vertical-align: -0.32em;
+  color: var(--accent);
+  margin: 0 0.08em;
+  overflow: visible;
+}
+
+/* Hover-flag: the cursor turns into the emoji from data-flag when hovering
+   over the phrase. No visible underline, no popup — the discovery IS the
+   reward. The SVG embeds the emoji as text rendered in the system emoji
+   font; the hotspot (16, 16) sits roughly at the flag's center. */
+.hover-flag {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><text y='26' font-size='26'>🇨🇦</text></svg>") 16 16, default;
+}
+
+/* ---- Contact ---- */
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin-bottom: 4rem;
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 768px) {
+  .contact {
+    margin-bottom: 5.5rem;
+  }
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--text);
+  text-decoration: none;
+  /* Button reset (one of the contact-links is a button for copy-to-clipboard) */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+}
+
+.contact-link:hover .contact-label {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--accent);
+}
+
+.contact-link:hover > span:not(.contact-hint):not(.contact-flash) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--accent);
+}
+
+/* Reset the baseline-nudge that .logo-mark applies for inline-in-prose use;
+   inside a flex contact link the icon is already vertically centered. */
+.contact-link .logo-mark {
+  top: 0;
+  height: 1.15em;
+}
+
+/* The "click to copy" hint sits faint to the right of the email until hover. */
+.contact-hint {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.05em;
+  color: var(--muted);
+  margin-left: 0.35em;
+  opacity: 0;
+  transform: translateX(-4px) rotate(-3deg);
+  transition:
+    opacity 200ms var(--ease),
+    transform 200ms var(--ease);
+}
+
+.contact-link--copy:hover .contact-hint,
+.contact-link--copy:focus-visible .contact-hint {
+  opacity: 1;
+  transform: translateX(0) rotate(-3deg);
+}
+
+/* "Copied!" flash that replaces the hint once clicked. */
+.contact-flash {
+  position: absolute;
+  top: -1.7em;
+  left: 1.4em;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.05em;
+  padding: 0.05em 0.55em;
+  border-radius: 4px;
+  transform: translateY(4px) rotate(-3deg);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 200ms var(--ease),
+    transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.contact-link.copied .contact-flash {
+  opacity: 1;
+  transform: translateY(0) rotate(-3deg);
+}
+
+.contact-link.copied .contact-hint {
+  opacity: 0;
+}
+
+/* Screen-reader-only live region for transient announcements. */
+.sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Right-column lists (Selected Work, Publications) ---- */
+
+/* Spacing between the two stacked sections. */
+.card-list + .card-list {
+  margin-top: 2.5rem;
+}
+
+/* Section headings — handwritten Caveat, big, slight tilt.
+   Loud enough to stand out without competing with the name above. */
+.card-list-heading {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: var(--text-2xl);
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1;
+  margin: 0 0 0.75rem;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+}
+
+.card-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--divider);
+}
+
+.card-list li {
+  border-bottom: 1px solid var(--divider);
+}
+
+.card-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  text-decoration: none;
+  color: var(--text);
+  line-height: 1.35;
+  transition: transform 220ms var(--ease);
+}
+
+.card-list a:hover {
+  transform: translateX(4px);
+}
+
+/* Two-line variant (used for publications: title + venue stacked). */
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  text-decoration: underline transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 200ms var(--ease);
+}
+
+.card-list a:hover .card-title {
+  text-decoration-color: var(--accent);
+}
+
+.card-meta {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.card-arrow {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--divider);
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 200ms var(--ease);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.card-list a:hover .card-arrow {
+  transform: translateX(8px);
+  color: var(--accent);
+}
+
+/* ============================================================
+   Work detail page
+   ============================================================ */
+
+/* Identity wordmark above the case study: "← Back to [headshot] Kurt
+   Reckziegel" as a single link. The whole phrase reads as one sentence,
+   the name IS the destination. */
+.site-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin: 0 0 3rem;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color 200ms var(--ease);
+  white-space: nowrap;
+}
+
+.site-wordmark-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.site-wordmark-arrow {
+  display: inline-block;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.site-wordmark:hover .site-wordmark-arrow {
+  transform: translateX(-3px);
+}
+
+.site-wordmark-photo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.site-wordmark:hover {
+  color: var(--accent);
+}
+
+.site-wordmark:hover .site-wordmark-photo {
+  transform: scale(1.08) rotate(-3deg);
+}
+
+.back-link {
+  margin: 0 0 3rem;
+  font-size: var(--text-sm);
+}
+
+.back-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+
+.back-link a:hover {
+  color: var(--accent);
+}
+
+.back-arrow {
+  display: inline-block;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.back-link a:hover .back-arrow {
+  transform: translateX(-3px);
+}
+
+.work-header {
+  margin-bottom: 2.5rem;
+}
+
+.work-meta {
+  margin: 0 0 0.9rem;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.work-meta .meta-sep {
+  margin: 0 0.6em;
+  color: var(--divider);
+}
+
+/* Timeframe gets the Caveat felt-tip treatment so the same handwritten
+   pen that signs the home page also signs each case study. Sits at a
+   slight tilt next to the all-caps client line, in the accent pink —
+   a small splash of personal warmth above the case study title. */
+.work-timeframe {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.7em;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--accent);
+  display: inline-block;
+  transform: rotate(-2deg);
+  vertical-align: -0.2em;
+  margin-left: 0.05em;
+}
+
+.work-detail h1 {
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.85rem;
+}
+
+.work-summary {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.work-body {
+  font-size: var(--text-base);
+  line-height: 1.65;
+}
+
+.work-body p {
+  margin: 0 0 1.2rem;
+}
+
+.work-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Prev / next nav ---- */
+.prev-next {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 5rem 0 0;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--divider);
+}
+
+@media (min-width: 768px) {
+  .prev-next {
+    margin-top: 6rem;
+    gap: 2rem;
+  }
+}
+
+.prev-next a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: var(--text);
+  padding: 0;
+  min-width: 0;
+}
+
+.prev-next .next {
+  text-align: right;
+}
+
+.prev-next-direction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: color 200ms var(--ease);
+}
+
+.prev-next .next .prev-next-direction {
+  justify-content: flex-end;
+}
+
+.prev-next-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  text-decoration: underline transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 200ms var(--ease);
+}
+
+.dir-arrow {
+  display: inline-block;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.prev-next a:hover .prev-next-direction {
+  color: var(--accent);
+}
+
+.prev-next a:hover .prev-next-title {
+  text-decoration-color: var(--accent);
+}
+
+.prev-next .prev:hover .dir-arrow {
+  transform: translateX(-3px);
+}
+
+.prev-next .next:hover .dir-arrow {
+  transform: translateX(3px);
+}
+
+/* ============================================================
+   404 page
+   ============================================================ */
+.not-found {
+  text-align: center;
+  padding-top: 6rem;
+}
+
+.not-found-code {
+  font-family: var(--font-display);
+  font-size: 6rem;
+  font-weight: 500;
+  line-height: 1;
+  margin: 0 0 1rem;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.not-found-message {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-style: italic;
+  margin: 0 0 3rem;
+  color: var(--muted);
+}
+
+.not-found-message .scrawl {
+  font-style: normal;
+  font-size: 1.25em;
+  margin-right: 0.15em;
+}
+
+.not-found-back {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.not-found-back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 200ms var(--ease);
+}
+
+.not-found-back a:hover {
+  color: var(--accent);
+}
+
+.not-found-back a:hover .back-arrow {
+  transform: translateX(-3px);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+/* Hand-drawn scribble that sits where a hairline would normally
+   divide the footer from the content. Drawn in the accent color. */
+.footer-scribble {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin: 4rem auto 0;
+  max-width: var(--measure-wide);
+  padding: 0 var(--gutter);
+  color: var(--accent);
+  overflow: visible;
+}
+
+@media (min-width: 960px) {
+  .footer-scribble {
+    padding-left: clamp(1.25rem, 4vw, 4rem);
+    padding-right: clamp(1.25rem, 4vw, 4rem);
+    max-width: none;
+  }
+}
+
+.site-footer {
+  max-width: var(--measure-wide);
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter) 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem 2rem;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+@media (min-width: 960px) {
+  .site-footer {
+    padding-left: clamp(1.25rem, 4vw, 4rem);
+    padding-right: clamp(1.25rem, 4vw, 4rem);
+    max-width: none;
+  }
+}
+
+.site-footer p {
+  margin: 0;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--divider);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 200ms var(--ease);
+}
+
+.site-footer a:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Centered profile icons in the footer (LinkedIn, Resume download).
+   Each is icon-on-top, label-underneath, both visible at all times. */
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.footer-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  text-decoration: none !important;
+  transition:
+    color 200ms var(--ease),
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.footer-link:hover {
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.footer-link-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.footer-link:hover .footer-link-icon {
+  transform: rotate(-4deg);
+}
+
+.footer-link-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.footer-link-label {
+  font-size: var(--text-xs);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.footer-built {
+  text-align: right;
+}
+
+/* Hand-scrawled span — sits inline with regular text but in Caveat. */
+.scrawl {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.5em;
+  line-height: 0.9;
+  color: var(--accent);
+  display: inline-block;
+  transform: rotate(-2deg);
+  margin-right: 0.15em;
+  /* Soft hover bump — feels like the ink is alive. */
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scrawl:hover {
+  transform: rotate(-3deg) scale(1.04);
+}
+
+/* "Go me!" tooltip — fades in above the scrawl on hover. Same Caveat
+   hand-drawn aesthetic, tilted the opposite direction so the two bits
+   of handwriting feel like separate strokes from the same pen. */
+.scrawl-go-me {
+  position: relative;
+}
+
+.scrawl-go-me::after {
+  content: 'Go me!';
+  position: absolute;
+  bottom: calc(100% - 0.1em);
+  right: 0.2em;
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 0.85em;
+  color: var(--muted);
+  opacity: 0;
+  transform: rotate(6deg) translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.scrawl-go-me:hover::after {
+  opacity: 1;
+  transform: rotate(6deg) translateY(0);
+}
+
+/* ============================================================
+   Page-load motion
+   ============================================================
+   Three waves on the home page, each with its own entrance style.
+   Waves overlap intentionally — start times stagger but durations
+   bleed into each other so the page composes itself fluidly.
+
+     Wave 1 (0–700ms):   Identity   — pops in with spring overshoot.
+     Wave 2 (200–950ms): Bio        — fades up softly, line by line.
+     Wave 3 (440–1080ms):Right col  — slides in from the right.
+
+   Detail pages use a simpler fallback (settle-up only).
+   All disabled by the prefers-reduced-motion rule below.
+*/
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes settle-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ---- Wave 1: identity block (headshot + name + pronunciation) ---- */
+.home .intro-identity {
+  animation: pop-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ---- Wave 2: the rest of the bio, staggered ---- */
+.home .tagline {
+  animation: settle-up 550ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
+}
+.home .bio {
+  animation: settle-up 600ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both;
+}
+.home .contact {
+  animation: settle-up 550ms cubic-bezier(0.16, 1, 0.3, 1) 440ms both;
+}
+
+/* ---- Wave 3: right column, also staggered ---- */
+.home .right-col .card-list:nth-child(1) {
+  animation: slide-in-right 620ms cubic-bezier(0.16, 1, 0.3, 1) 440ms both;
+}
+.home .right-col .card-list:nth-child(2) {
+  animation: slide-in-right 620ms cubic-bezier(0.16, 1, 0.3, 1) 560ms both;
+}
+
+/* ---- Detail-page fallback (simple settle for back/article/prev-next) ---- */
+.work-detail > * {
+  animation: settle-up 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.work-detail > *:nth-child(2) { animation-delay: 100ms; }
+.work-detail > *:nth-child(3) { animation-delay: 200ms; }
+
+/* ---- Footer trails everything ---- */
+.footer-scribble {
+  animation: settle-up 550ms cubic-bezier(0.16, 1, 0.3, 1) 680ms both;
+}
+.site-footer {
+  animation: settle-up 550ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both;
+}
+
+/* ---- Wave 4: scribbles draw themselves in (last, after everything else)
+   Each path uses pathLength="100" so we can animate stroke-dashoffset
+   from 100 → 0 regardless of geometric length. Strokes start hidden via
+   the fill-mode: both, then draw in. */
+@keyframes draw-stroke {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.scribble path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+/* Scribbles draw line-by-line, with a clear pause between each tagline
+   line — as if someone is going through and marking up one line at a
+   time, not racing across all three. */
+
+/* Line 1 — Curious (?) */
+.scribble-q path {
+  animation: draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 1400ms both;
+}
+/* Dot of the question mark. The circle is a filled element (no
+   stroke-dashoffset trick available), so set opacity="0" directly on
+   the SVG element so it's invisible from the very first paint —
+   independent of when CSS animations get scheduled. The fade-in
+   animation then handles bringing it on screen at the right moment. */
+.scribble-q circle {
+  opacity: 0;
+  animation: fade-in 250ms ease-out 1800ms forwards;
+}
+/* Finishes ~2050ms. Pause ~350ms before line 2 starts. */
+
+/* Line 2 — Brands (○ ○) */
+.scribble-circle path:nth-of-type(1) {
+  animation: draw-stroke 650ms cubic-bezier(0.65, 0, 0.35, 1) 2400ms both;
+}
+.scribble-circle path:nth-of-type(2) {
+  animation: draw-stroke 550ms cubic-bezier(0.65, 0, 0.35, 1) 2800ms both;
+}
+/* Finishes ~3350ms. Pause ~300ms before line 3 starts. */
+
+/* Line 3 — Grounded in strategy (═══) */
+.scribble-underline path:nth-of-type(1) {
+  animation: draw-stroke 500ms cubic-bezier(0.65, 0, 0.35, 1) 3650ms both;
+}
+.scribble-underline path:nth-of-type(2) {
+  animation: draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 3950ms both;
+}
+/* Finishes ~4400ms. Pause ~300ms before footer scribble. */
+
+/* Footer scribble divider — last thing to draw.
+   stroke-linecap=round leaves a tiny half-circle at the path end while
+   the dash is fully offset, which shows up as a stray pink dot above
+   the right edge of the footer during the delay. Hide the whole path
+   with opacity until the draw animation begins.
+
+   Default delay (~600ms) for inner pages, which have no preceding intro
+   animation. Home page overrides with a long delay so the scribble lands
+   AFTER the three-wave intro and tagline scribbles finish. */
+.footer-scribble path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  opacity: 0;
+  animation:
+    draw-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) 600ms both,
+    scribble-reveal 1ms linear 600ms forwards;
+}
+
+.home + .footer-scribble path {
+  animation:
+    draw-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) 4700ms both,
+    scribble-reveal 1ms linear 4700ms forwards;
+}
+
+@keyframes scribble-reveal {
+  to { opacity: 1; }
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

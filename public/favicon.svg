@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#e91d63"/>
+  <!-- Hand-drawn asterisk: three crossed strokes through center,
+       each with a slight wobble so it reads as ink rather than glyph. -->
+  <g stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M 16 6.5 Q 15.6 11, 16 16 Q 16.4 21, 15.9 25.6"/>
+    <path d="M 7.4 11.2 Q 11.6 13.4, 16 16 Q 20.5 18.7, 24.6 21"/>
+    <path d="M 24.6 11.2 Q 20.4 13.5, 16 16 Q 11.5 18.7, 7.4 21"/>
+  </g>
+</svg>

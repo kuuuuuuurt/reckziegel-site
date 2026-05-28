@@ -1,0 +1,31 @@
+---
+// Standalone icon rendering — drops just the SVG inline, no word.
+// Used in contexts where the surrounding text (link text, button label)
+// already describes the destination, so the icon is decorative
+// (aria-hidden). For the brand-logo-in-prose pattern, use <Logo>.
+
+import { logos } from '../data/logos';
+
+interface Props {
+  /** Slug matching a filename in src/assets/logos/ (without the .svg). */
+  name: string;
+}
+
+const { name } = Astro.props;
+const logo = logos[name];
+
+if (!logo) {
+  throw new Error(
+    `<Icon name="${name}" /> not found. Drop src/assets/logos/${name}.svg.`,
+  );
+}
+
+const markStyle = `--logo-rotation: ${logo.rotation}deg; --logo-scale: ${logo.scale}`;
+---
+<span
+  class="logo-mark"
+  style={markStyle}
+  aria-hidden="true"
+  data-full-bleed={logo.fullBleed ? '' : undefined}
+  set:html={logo.svg}
+/>
