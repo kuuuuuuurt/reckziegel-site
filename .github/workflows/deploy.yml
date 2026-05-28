@@ -1,0 +1,52 @@
+name: Deploy to Hostinger
+
+# Trigger: any push to the main branch
+on:
+  push:
+    branches: [main]
+  # Also allow manual runs from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Pull down the latest code from the repo
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js (matches the version you use locally)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      # 3. Install dependencies (using lockfile for reproducible builds)
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build the static site into ./dist/
+      - name: Build site
+        run: npm run build
+
+      # 5. Sync ./dist/ to Hostinger via FTPS.
+      #    The action only uploads files that changed since the last
+      #    deploy (it tracks state via .ftp-deploy-sync-state.json on
+      #    the server), so subsequent deploys are fast.
+      - name: Deploy to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: /public_html/
+          # Don't delete this state file when syncing
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
