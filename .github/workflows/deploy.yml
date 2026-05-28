@@ -44,7 +44,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./dist/
-          server-dir: /public_html/
+          server-dir: /domains/reckziegel.me/public_html/
           # Don't delete this state file when syncing
           exclude: |
             **/.git*
