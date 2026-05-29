@@ -46,7 +46,7 @@ const urlOverrides: Record<string, string> = {
   'ab-inbev': 'https://www.linkedin.com/company/zx-ventures/about/',
   vice: 'https://www.virtueworldwide.com',
   jmsb: 'https://www.concordia.ca/jmsb.html',
-  kudare: 'https://www.linkedin.com/company/kudare/about/',
+  kudare: 'https://kudare.co',
   betterment: 'https://www.betterment.com/work',
   unilever: 'https://www.unilever.com/',
   target: 'https://corporate.target.com/',

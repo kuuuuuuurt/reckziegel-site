@@ -6,7 +6,7 @@ email: kurt.reckziegel@gmail.com
 linkedin: https://www.linkedin.com/in/kurtreckziegel/
 ---
 
-I run {logo:kudare}, an independent consulting practice doing market research & growth strategy for companies that need to {slash} like to {slash} sometimes need to be convinced to move fast. CEOs, CMOs, and strat leaders bring me in for the marketing, product, and brand decisions they can't afford to get wrong.
+I run {logo:kudare}, an independent practice that informs the decisions senior leaders can't afford to get wrong. CEOs, CMOs, and strategy leaders bring me in for the marketing, product, and brand calls they need to {slash} want to {slash} sometimes have to be convinced to make.
 
 Recent consulting clients include {logo:wikimedia}, {logo:youtube}, {logo:snap}, {logo:textnow}, {logo:betterment}, {logo:rolex}, {logo:ernesta}, and a handful of ventures in construction SaaS & fintech.
 

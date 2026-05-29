@@ -37,6 +37,7 @@ const markStyle = `--logo-rotation: ${logo.rotation}deg; --logo-scale: ${logo.sc
       class="logo-pair logo-pair--solo"
       role="img"
       aria-label={label ?? logo.label}
+      data-logo={name}
       {...linkAttrs}
     >
       <span
@@ -47,7 +48,7 @@ const markStyle = `--logo-rotation: ${logo.rotation}deg; --logo-scale: ${logo.sc
       />
     </Tag>
   ) : (
-    <Tag class="logo-pair" {...linkAttrs}>
+    <Tag class="logo-pair" data-logo={name} {...linkAttrs}>
       <span class="logo-label">{label ?? logo.label}</span><span
         class="logo-mark"
         style={markStyle}
