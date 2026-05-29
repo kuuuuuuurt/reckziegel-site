@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Headshot placeholder">
-  <circle cx="120" cy="120" r="118" fill="#e5e5e5" stroke="#999" stroke-width="2" stroke-dasharray="6 6"/>
-  <text x="120" y="118" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="600" fill="#555">Headshot placeholder</text>
-  <text x="120" y="142" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#777">replace public/headshot.jpg</text>
-</svg>

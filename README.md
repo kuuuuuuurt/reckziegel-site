@@ -2,6 +2,8 @@
 
 Personal site for Kurt Reckziegel. Static site built with [Astro 5](https://astro.build), deployed to Hostinger shared hosting. Auto-deploys via GitHub Actions on every push to `main`.
 
+Source published for transparency and as a portfolio piece; not maintained as a reusable template.
+
 Lighthouse scores 100/100/100/100 across accessibility, best practices, SEO, and performance.
 
 ---
@@ -143,14 +145,14 @@ Three encrypted secrets configured under **Settings → Secrets and variables �
 
 The workflow's `server-dir` is set to `/domains/reckziegel.me/public_html/` — that's the actual document root for this site on Hostinger's premium hosting layout.
 
-**Do NOT change this to `/public_html/`** (the obvious-looking default). That folder exists at the FTP account's home directory level, but it's **NOT** the live document root for the domain. Files uploaded there go nowhere visible to the public. This trap cost a couple of hours during initial setup.
+**Do NOT change this to `/public_html/`** (the obvious-looking default). That folder exists at the FTP account's home directory level, but it's **NOT** the live document root for the domain. Files uploaded there go nowhere visible to the public.
 
 If you ever set up auto-deploy for a different domain on the same hosting account, the pattern is: `/domains/<that-domain>/public_html/`.
 
 ### One-time setup already done
 
 - **Domain + DNS + SSL**: `reckziegel.me` points at Hostinger nameservers; Let's Encrypt cert is auto-provisioned. No action needed unless you change registrars.
-- **`.htaccess`**: Lives at `public/.htaccess` in the repo, which Astro copies to `dist/.htaccess` at build time. Two responsibilities: it serves the custom 404 (`ErrorDocument 404 /404.html`) and sets cache headers (HTML 5 min, images/PDF 30 days, fingerprinted CSS/JS/fonts 1 year). Don't touch unless you know why.
+- **`.htaccess`**: Lives at `public/.htaccess` in the repo, which Astro copies to `dist/.htaccess` at build time. Two responsibilities: it serves the custom 404 (`ErrorDocument 404 /404.html`) and sets cache headers (HTML 5 min, images/PDF 30 days, fingerprinted CSS/JS/fonts 1 year). Modify with care — wrong cache rules can stale-serve broken updates.
 
 ### After a deploy, verify
 

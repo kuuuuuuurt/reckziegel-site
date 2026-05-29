@@ -16,7 +16,8 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
-# editor / OS
+# editor / OS / agent tooling
 .vscode/
 .idea/
+.claude/
 .DS_Store
