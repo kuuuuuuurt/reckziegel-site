@@ -13,10 +13,7 @@ export const publications: Publication[] = [
   {
     title: 'Perspicacity',
     venue: 'Substack',
-    // Temporary direct-Substack URL while the publication transitions
-    // to a Kudare-owned subdomain at perspicacity.kudare.co. Swap back
-    // to the subdomain once DNS + Substack custom-domain setup lands.
-    url: 'https://perspicacityy.substack.com/',
+    url: 'https://perspicacity.kudare.co/',
   },
   {
     title: "KIT: Kurt's Insights Toolkit",
