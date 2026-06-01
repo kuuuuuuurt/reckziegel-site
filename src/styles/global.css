@@ -1371,6 +1371,13 @@ body.konami .logo-pair:nth-child(5n) .logo-mark { animation-delay: 320ms; }
 .scribble path {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
+  /* Hide initially with opacity to suppress the tiny "dot" that
+     stroke-linecap=round can briefly expose at the path endpoint
+     before the draw-stroke animation begins (FOUC / animation
+     init race). A 1ms scribble-reveal animation layered on each
+     scribble flips opacity to 1 at the moment the line starts
+     drawing. Same fix we applied to the footer scribble. */
+  opacity: 0;
 }
 
 /* Scribbles draw line-by-line, with a clear pause between each tagline
@@ -1379,7 +1386,9 @@ body.konami .logo-pair:nth-child(5n) .logo-mark { animation-delay: 320ms; }
 
 /* Line 1 — Curious (?) */
 .scribble-q path {
-  animation: draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 1400ms both;
+  animation:
+    draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 1400ms both,
+    scribble-reveal 1ms linear 1400ms forwards;
 }
 /* Dot of the question mark. The circle is a filled element (no
    stroke-dashoffset trick available), so set opacity="0" directly on
@@ -1394,19 +1403,27 @@ body.konami .logo-pair:nth-child(5n) .logo-mark { animation-delay: 320ms; }
 
 /* Line 2 — Brands (○ ○) */
 .scribble-circle path:nth-of-type(1) {
-  animation: draw-stroke 650ms cubic-bezier(0.65, 0, 0.35, 1) 2400ms both;
+  animation:
+    draw-stroke 650ms cubic-bezier(0.65, 0, 0.35, 1) 2400ms both,
+    scribble-reveal 1ms linear 2400ms forwards;
 }
 .scribble-circle path:nth-of-type(2) {
-  animation: draw-stroke 550ms cubic-bezier(0.65, 0, 0.35, 1) 2800ms both;
+  animation:
+    draw-stroke 550ms cubic-bezier(0.65, 0, 0.35, 1) 2800ms both,
+    scribble-reveal 1ms linear 2800ms forwards;
 }
 /* Finishes ~3350ms. Pause ~300ms before line 3 starts. */
 
 /* Line 3 — Grounded in strategy (═══) */
 .scribble-underline path:nth-of-type(1) {
-  animation: draw-stroke 500ms cubic-bezier(0.65, 0, 0.35, 1) 3650ms both;
+  animation:
+    draw-stroke 500ms cubic-bezier(0.65, 0, 0.35, 1) 3650ms both,
+    scribble-reveal 1ms linear 3650ms forwards;
 }
 .scribble-underline path:nth-of-type(2) {
-  animation: draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 3950ms both;
+  animation:
+    draw-stroke 450ms cubic-bezier(0.65, 0, 0.35, 1) 3950ms both,
+    scribble-reveal 1ms linear 3950ms forwards;
 }
 /* Finishes ~4400ms. Pause ~300ms before footer scribble. */
 
