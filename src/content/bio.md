@@ -6,7 +6,7 @@ email: kurt.reckziegel@gmail.com
 linkedin: https://www.linkedin.com/in/kurtreckziegel/
 ---
 
-I run {logo:kudare}, an independent practice that informs the decisions senior leaders can't afford to get wrong. CEOs, CMOs, and strategy leaders bring me in for the marketing, product, and brand calls they need to {slash} want to {slash} sometimes have to be convinced to make.
+I run {logo:kudare}, an independent practice that informs the decisions senior leaders can't afford to get wrong. CEOs, CMOs, and strategy leaders bring me in for the marketing, product, and business calls they need to {slash} want to {slash} sometimes have to be convinced to make.
 
 Recent consulting clients include {logo:wikimedia}, {logo:youtube}, {logo:snap}, {logo:textnow}, {logo:betterment}, {logo:rolex}, {logo:ernesta}, and a handful of tech ventures.
 
